@@ -1,68 +1,3 @@
-# import chromadb
-# from chromadb.utils import embedding_functions
-# import google.generativeai as genai
-
-# # 1. Load the text file
-# def load_text(file_path):
-#     with open(file_path, "r", encoding="utf-8") as file:
-#         return file.read()
-
-# # 2. Split text into chunks
-# def split_text(text, chunk_size=500):
-#     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-
-# # 3. Create embeddings
-# embedding_model = embedding_functions.DefaultEmbeddingFunction()
-# chroma_client = chromadb.PersistentClient(path="./chroma_db")
-
-# collection = chroma_client.get_or_create_collection(name="chatbot_knowledge")
-
-# def store_embeddings(text_chunks):
-#     for idx, chunk in enumerate(text_chunks):
-#         embedding = embedding_model([chunk])[0]
-#         collection.add(ids=[str(idx)], embeddings=[embedding], documents=[chunk])
-
-# # 4. Retrieve relevant chunks
-# def retrieve_relevant_chunks(query):
-#     query_embedding = embedding_model([query])[0]
-#     try:
-#         # Get the count of items in the collection to avoid requesting too many
-#         collection_count = collection.count()
-#         n_results = min(3, collection_count)
-        
-#         results = collection.query(query_embeddings=[query_embedding], n_results=n_results)
-#         if results["documents"]:
-#             return " ".join(results["documents"][0])
-#         return ""
-#     except Exception as e:
-#         print(f"Error retrieving chunks: {e}")
-#         return ""
-
-# # 5. Use Gemini for final response
-# genai.configure(api_key="AIzaSyDyIOLNBCqpT-pyHXcFZZg8SZsFtPnlwoE")  # Replace with your actual API key
-
-# def chatbot_response(user_query):
-#     context = retrieve_relevant_chunks(user_query)
-    
-#     # Use Gemini 1.5 Flash specifically
-#     model = genai.GenerativeModel('gemini-1.5-flash')
-    
-#     # Generate response
-#     prompt = f"Based on the following information, answer the question: {context}\n\nUser: {user_query}"
-#     try:
-#         response = model.generate_content(prompt)
-#         return response.text
-#     except Exception as e:
-#         return f"Error generating response: {e}"
-
-# # Run chatbot
-# text_data = load_text("F:/Ishan_Data/cep.txt")
-# text_chunks = split_text(text_data)
-# store_embeddings(text_chunks)
-
-# user_question = "What is mentioned about AI in the text?"
-# print(chatbot_response(user_question))
-
 import chromadb
 from chromadb.utils import embedding_functions
 import google.generativeai as genai
@@ -72,7 +7,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 import re
 
-# Download NLTK resources (run once)
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
@@ -86,15 +20,14 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
-# Configure Gemini API
-genai.configure(api_key="AIzaSyDyIOLNBCqpT-pyHXcFZZg8SZsFtPnlwoE")  # Replace with your actual API key
 
-# 1. Load the text file
+genai.configure(api_key="AIzaSyDyIOLNBCqpT-pyHXcFZZg8SZsFtPnlwoE")  
+
+
 def load_text(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
         return file.read()
 
-# 2. Preprocess text with tokenization and lemmatization
 def preprocess_text(text):
     # Convert to lowercase
     text = text.lower()
@@ -115,9 +48,7 @@ def preprocess_text(text):
     
     return ' '.join(lemmatized_tokens)
 
-# 3. Split text into chunks - keep chunks more meaningful
 def split_text(text, chunk_size=200):
-    # Split by paragraphs or sentences first
     paragraphs = text.split('\n')
     chunks = []
     current_chunk = ""
@@ -135,11 +66,10 @@ def split_text(text, chunk_size=200):
         
     return chunks
 
-# 4. Create embeddings
+
 embedding_model = embedding_functions.DefaultEmbeddingFunction()
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
-# Remove existing collection if it exists and create a new one
 try:
     chroma_client.delete_collection(name="chatbot_knowledge")
 except:
@@ -147,20 +77,16 @@ except:
 collection = chroma_client.create_collection(name="chatbot_knowledge")
 
 def store_embeddings(chunks):
-    # Store the original text directly
     for idx, chunk in enumerate(chunks):
         processed_chunk = preprocess_text(chunk)
         embedding = embedding_model([processed_chunk])[0]
         collection.add(ids=[str(idx)], embeddings=[embedding], documents=[chunk])
 
-# 5. Retrieve relevant chunks
 def retrieve_relevant_chunks(query):
-    # Preprocess the query the same way as the documents
     processed_query = preprocess_text(query)
     query_embedding = embedding_model([processed_query])[0]
     
     try:
-        # Get the count of items in the collection
         collection_count = collection.count()
         if collection_count == 0:
             return "No data available in the collection."
@@ -170,15 +96,14 @@ def retrieve_relevant_chunks(query):
         
         if not results["documents"] or not results["documents"][0]:
             return ""
-        
-        # Return all retrieved documents
+ 
         return " ".join(results["documents"][0])
         
     except Exception as e:
         print(f"Error retrieving chunks: {e}")
         return ""
 
-# 6. Use Gemini to filter for relevance
+
 def filter_relevant_content(retrieved_text, user_query):
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
@@ -202,7 +127,7 @@ def filter_relevant_content(retrieved_text, user_query):
         response = model.generate_content(prompt)
         filtered_content = response.text.strip()
         
-        # If the response is empty or indicates no information
+       
         if not filtered_content or filtered_content.lower() in ["no information", "no relevant information", "none"]:
             return "No information"
             
@@ -210,12 +135,11 @@ def filter_relevant_content(retrieved_text, user_query):
         
     except Exception as e:
         print(f"Error with Gemini API: {e}")
-        # Fallback to basic filtering if Gemini fails
         return retrieved_text
 
-# 7. Main chatbot response function
+
 def chatbot_response(user_query):
-    # First retrieve potentially relevant chunks from the text file
+
     retrieved_context = retrieve_relevant_chunks(user_query)
     
     if not retrieved_context:
@@ -226,7 +150,6 @@ def chatbot_response(user_query):
     
     return relevant_content
 
-# Run chatbot
 file_path = "F:/Ishan_Data/cep.txt"
 text_data = load_text(file_path)
 chunks = split_text(text_data)
