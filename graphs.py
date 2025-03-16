@@ -283,3 +283,72 @@ plt.grid(True, linestyle="--", alpha=0.5)
 
 # Show plot
 plt.show()
+
+'''
+other 5 graphs
+'''
+import matplotlib.pyplot as plt
+
+# highest Paying Jobs in 2024 (bar Chart)
+jobs = ["AI Engineer", "Data Scientist", "Cloud Architect", "Cybersecurity", "Blockchain Dev"]
+salaries = [150000, 140000, 135000, 130000, 125000]  # Average salaries in USD
+
+plt.figure(figsize=(8,5))
+plt.bar(jobs, salaries, color=['blue', 'green', 'red', 'purple', 'orange'])
+plt.xlabel("Jobs")
+plt.ylabel("Average Salary (USD)")
+plt.title("Highest Paying Jobs in 2024")
+plt.xticks(rotation=15)
+plt.show()
+
+# demand vs. Supply of Professionals(line Chart)
+fields = ["AI", "Cybersecurity", "Cloud Computing", "Blockchain", "Data Science"]
+#in percent
+demand = [80, 75, 70, 65, 90] 
+supply = [40, 50, 45, 35, 60] 
+
+plt.plot(fields, demand, marker='o', linestyle='-', label="Demand", color="blue")
+plt.plot(fields, supply, marker='s', linestyle='--', label="Supply", color="red")
+plt.xlabel("Fields")
+plt.ylabel("Percentage (%)")
+plt.title("Demand vs. Supply of Professionals in 2024")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#Impact of AI on Jobs: Lost vs. Created (pie Chart)
+labels = ["Jobs Lost", "Jobs Created"]
+values = [30, 70]
+
+plt.pie(values, labels=labels, autopct='%1.1f%%', colors=['red', 'green'])
+plt.title("Impact of AI on Jobs (2024)")
+plt.show()
+
+# skills That Will Be in Demand (2024-2030)
+
+import seaborn as sns
+skills = ["AI/ML", "Cloud Computing", "Cybersecurity", "Blockchain", "Data Science", "Quantum Computing"]
+demand = [90, 85, 80, 75, 95, 93]
+
+sns.barplot(x=skills, y=demand, palette="viridis")
+plt.xlabel("Skills")
+plt.ylabel("Demand (%)")
+plt.title("Skills That Will Be in Demand (2024-2030)")
+plt.xticks(rotation=15)
+plt.show()
+
+
+#Top Countries for Career Growth & Opportunities (Scatter Plot)
+countries = ["USA", "Canada", "Germany", "Australia", "India"]
+growth_index = [90, 85, 80, 82, 88]  # Career growth score
+opportunities = [95, 80, 78, 76, 85]  # Job market score
+
+plt.scatter(growth_index, opportunities, color='purple')
+for i, country in enumerate(countries):
+    plt.text(growth_index[i], opportunities[i], country)
+
+plt.xlabel("Career Growth Index")
+plt.ylabel("Job Opportunities Index")
+plt.title("Top Countries for Career Growth (2024)")
+plt.grid(True)
+plt.show()
